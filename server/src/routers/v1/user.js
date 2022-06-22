@@ -3,7 +3,7 @@ import multer from "multer";
 
 import { User } from "../../models/index.js";
 import { encrypt_password } from "./../../utils/encrypt.js";
-import { USER } from "./../../utils/constant.js";
+import { DEFAULT_AVATAR, USER } from "./../../utils/constant.js";
 
 const user = express.Router();
 
@@ -20,6 +20,7 @@ user.post("/", multer().none(), async (req, res, next) => {
   const result = await User.create({
     username,
     password: encrypted_password,
+    avatar: DEFAULT_AVATAR + username,
     type: USER,
   });
   return res.status(200).json({

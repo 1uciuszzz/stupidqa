@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import {
     Avatar,
     Button,
@@ -14,9 +13,14 @@ import {
     Typography,
     createTheme,
     ThemeProvider,
+    Snackbar,
+    Alert,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-// import axios from "../../utils/request.js";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../../store/reducers/users";
+import { useState } from "react";
 
 function Copyright(props) {
     return (
@@ -39,18 +43,36 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function index() {
+    const [open, Setopen] = useState(false);
+    const [tipkind, SettipKind] = useState("success");
+    const tip = useSelector(state => state.user.tip);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const handleSubmit = async event => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        console.log({
-            username: data.get("username"),
-            password: data.get("password"),
-        });
-        const response = await axios.post("/api/v1/auth", data);
+        //登录设置token
+        await dispatch(login(data));
+        let token = localStorage.getItem("token");
+        if (token) {
+            SettipKind("success");
+            navigate("/home");
+        }
+        SettipKind("error");
+        Setopen(true);
+        // const response = await axios.post("/api/v1/auth", data);
+    };
+    const handleClose = () => {
+        Setopen(false);
     };
 
     return (
         <ThemeProvider theme={theme}>
+            <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+                <Alert severity={tipkind} sx={{ width: "100%" }}>
+                    {tip}
+                </Alert>
+            </Snackbar>
             <Grid container component="main" sx={{ height: "100vh" }}>
                 <CssBaseline />
                 <Grid
