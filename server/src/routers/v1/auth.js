@@ -16,7 +16,7 @@ auth.post("/", multer().none(), async (req, res, next) => {
       const token = gen_token({ _id: user._id });
       return res.status(200).json({
         status: 200,
-        payload: { token },
+        payload: { token, user_id: user._id },
         msg: "login success",
       });
     } else {
