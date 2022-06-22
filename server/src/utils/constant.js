@@ -6,3 +6,4 @@ export const JWT_KEY =
 
 export const USER = "user";
 export const ADMIN = "admin";
+export const DEFAULT_AVATAR = "https://joeschmoe.io/api/v1/";
