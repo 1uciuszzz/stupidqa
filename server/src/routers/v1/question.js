@@ -82,6 +82,7 @@ question.get("/:id", async (req, res, next) => {
     title: question.title,
     tags: question.tags,
     created_by: {
+      _id: created_by._id,
       avatar: created_by.avatar,
       username: created_by.username,
     },
@@ -89,12 +90,13 @@ question.get("/:id", async (req, res, next) => {
     updated_time: question.updated_time,
     level: question.level,
     created_for: {
+      _id: created_for._id,
       avatar: created_for.avatar,
       username: created_for.username,
     },
     answer_count: question.answer_count,
   };
-  const answers_with_details = answers.map(async (answer) => {
+  const answers_with_details = await answers.map(async (answer) => {
     const publisher = await User.findById(answer.published_by);
     const liked_users = answer.liked_by.map(async (uid) => {
       const user = await User.findById(uid);
@@ -114,7 +116,7 @@ question.get("/:id", async (req, res, next) => {
     status: 200,
     payload: {
       question: question_with_details,
-      answers: answers_with_details,
+      answers: await Promise.all(answers_with_details),
     },
     msg: "query success",
   });

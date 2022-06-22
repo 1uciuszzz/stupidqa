@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 
 import { Question, User } from "../../models/index.js";
-import { encrypt_password } from "./../../utils/encrypt.js";
+import { encrypt_password, verify_password } from "./../../utils/encrypt.js";
 import { DEFAULT_AVATAR, USER } from "./../../utils/constant.js";
 import { verify_token } from "../../utils/jwt.js";
 
@@ -37,8 +37,31 @@ user.post("/", multer().none(), async (req, res, next) => {
     msg: "register success",
   });
 });
+
 user.delete("/:id", async (req, res, next) => {});
-user.patch("/:id", async (req, res, next) => {});
+
+// 用户修改密码
+user.patch("/:id", async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const target_user = await User.findById(id);
+    const { origin_password, changed_password } = req.body;
+    const match = verify_password(origin_password, target_user.password);
+    if (match) {
+      const new_encrypted_password = encrypt_password(changed_password);
+      target_user.password = new_encrypted_password;
+      target_user.save();
+      return res.status(200).json({
+        status: 200,
+        msg: "change password success",
+      });
+    } else {
+      return res.status(200).json({ status: 403, msg: "auth failed" });
+    }
+  } catch (e) {
+    return res.status(200).json({ status: 200, msg: "field id invalid" });
+  }
+});
 
 // 获取用户详情
 user.get("/:id", async (req, res, next) => {
@@ -51,16 +74,22 @@ user.get("/:id", async (req, res, next) => {
         username: user.username,
         avatar: user.avatar,
       };
-      const questions = await Question.find({ create_for: id });
+      const questions = await Question.find({ created_for: id });
       const received_questions = questions.map(async (question) => {
-        const publisher = await User.findById(question.created_by);
+        const dispatcher = await User.findById(question.created_by);
         return {
+          _id: question._id,
           title: question.title,
           tags: question.tags,
           created_by: {
-            _id: publisher._id,
-            username: publisher.username,
-            avatar: publisher.avatar,
+            _id: dispatcher._id,
+            username: dispatcher.username,
+            avatar: dispatcher.avatar,
+          },
+          created_for: {
+            _id: user._id,
+            username: user.username,
+            avatar: user.avatar,
           },
           created_time: question.created_time,
           updated_time: question.updated_time,
@@ -72,21 +101,15 @@ user.get("/:id", async (req, res, next) => {
         status: 200,
         payload: {
           user: user_output,
-          received_questions,
+          received_questions: await Promise.all(received_questions),
         },
         msg: "query success",
       });
     } else {
-      return res.status(200).json({
-        status: 404,
-        msg: "user not found",
-      });
+      return res.status(200).json({ status: 404, msg: "user not found" });
     }
   } catch (e) {
-    return res.status(200).json({
-      status: 403,
-      msg: "token invalid",
-    });
+    return res.status(200).json({ status: 403, msg: "field id invalid" });
   }
 });
 
@@ -114,10 +137,7 @@ user.get("/", async (req, res, next) => {
       msg: "query success",
     });
   } else {
-    return res.status(200).json({
-      status: 401,
-      msg: "please login",
-    });
+    return res.status(200).json({ status: 401, msg: "please login" });
   }
 });
 
