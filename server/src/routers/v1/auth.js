@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 
 import { verify_password } from "../../utils/encrypt.js";
 import { User } from "./../../models/index.js";
@@ -6,7 +7,7 @@ import { gen_token } from "./../../utils/jwt.js";
 
 const auth = express.Router();
 
-auth.post("/", async (req, res, next) => {
+auth.post("/", multer().none(), async (req, res, next) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });
   if (user) {
@@ -16,7 +17,7 @@ auth.post("/", async (req, res, next) => {
       return res.status(200).json({
         status: 200,
         payload: { token },
-        msg: "login successful",
+        msg: "login success",
       });
     } else {
       return res.status(200).json({

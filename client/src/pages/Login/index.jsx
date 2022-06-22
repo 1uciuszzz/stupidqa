@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
     Avatar,
     Button,
@@ -15,7 +16,7 @@ import {
     ThemeProvider,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import axios from "../../utils/request.js";
+// import axios from "../../utils/request.js";
 
 function Copyright(props) {
     return (
@@ -45,9 +46,7 @@ export default function index() {
             username: data.get("username"),
             password: data.get("password"),
         });
-        console.log(data);
-        let data1 = await axios({ url: "/v1/auth", method: "POST", data });
-        console.log(data1);
+        const response = await axios.post("/api/v1/auth", data);
     };
 
     return (
@@ -106,7 +105,7 @@ export default function index() {
                                 required
                                 fullWidth
                                 id="username"
-                                label="username"
+                                label="Username"
                                 name="username"
                                 autoComplete="username"
                                 autoFocus

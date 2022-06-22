@@ -8,7 +8,6 @@ const ins = axios.create({
     // 自定义axios
     // baseURL: isDev ? '/admin' : 'http://121.89.205.189:3001/admin/',
     baseURL: "http://localhost:5000/api",
-    // baseURL: 'http://121.89.205.189:3001/admin/',
     timeout: 6000,
 });
 

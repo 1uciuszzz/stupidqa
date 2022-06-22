@@ -21,6 +21,12 @@ export default {
       directory: path.join(path.dirname("./webpack.config.js"), "build"),
     },
     port: 80,
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+    },
   },
   module: {
     rules: [
