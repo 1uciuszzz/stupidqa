@@ -7,7 +7,6 @@ export default function App() {
         <Router>
             <Routes>
                 {routes.map(item => {
-                    console.log(item);
                     return (
                         <Route
                             path={item.path}

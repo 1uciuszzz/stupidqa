@@ -15,6 +15,7 @@ import {
     ThemeProvider,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import axios from "../../utils/request.js";
 
 function Copyright(props) {
     return (
@@ -37,13 +38,16 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function index() {
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         console.log({
-            email: data.get("email"),
+            username: data.get("username"),
             password: data.get("password"),
         });
+        console.log(data);
+        let data1 = await axios({ url: "/v1/auth", method: "POST", data });
+        console.log(data1);
     };
 
     return (
@@ -101,10 +105,10 @@ export default function index() {
                                 margin="normal"
                                 required
                                 fullWidth
-                                id="email"
-                                label="Email Address"
-                                name="email"
-                                autoComplete="email"
+                                id="username"
+                                label="username"
+                                name="username"
+                                autoComplete="username"
                                 autoFocus
                             />
                             <TextField
