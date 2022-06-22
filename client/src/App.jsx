@@ -1,11 +1,22 @@
 import React from "react";
-import Logo from "./assets/undraw_react_re_g3ui.svg";
-import "./App.css";
+import routes from "./router";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 
 export default function App() {
-  return (
-    <div className="logoContainer">
-      <Logo />
-    </div>
-  );
+    return (
+        <Router>
+            <Routes>
+                {routes.map(item => {
+                    console.log(item);
+                    return (
+                        <Route
+                            path={item.path}
+                            element={item.element}
+                            key={item.path}
+                        ></Route>
+                    );
+                })}
+            </Routes>
+        </Router>
+    );
 }
