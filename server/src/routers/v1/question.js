@@ -9,7 +9,7 @@ question.post("/user/:id", async (req, res, next) => {
   const { authorization } = req.headers;
   const verify = verify_token(authorization);
   if (verify.status) {
-    const publisher_id = verify.payload._id;
+    const user = verify.payload;
     const { id } = req.params;
     let created_for = null;
     try {
@@ -26,7 +26,7 @@ question.post("/user/:id", async (req, res, next) => {
         const result = await Question.create({
           title,
           tags,
-          created_by: publisher_id,
+          created_by: user._id,
           created_time: new Date(),
           updated_time: new Date(),
           level,
@@ -36,7 +36,24 @@ question.post("/user/:id", async (req, res, next) => {
         return res.status(200).json({
           status: 200,
           payload: {
-            question: result,
+            question: {
+              title: result.title,
+              tags: result.tags,
+              created_by: {
+                _id: user._id,
+                username: user.username,
+                avatar: user.avatar,
+              },
+              created_time: result.created_time,
+              updated_time: result.updated_time,
+              level: result.level,
+              created_for: {
+                _id: created_for._id,
+                username: created_for.username,
+                avatar: created_for.avatar,
+              },
+              answer_count: result.answer_count,
+            },
           },
           msg: "create question success",
         });
@@ -96,7 +113,7 @@ question.get("/:id", async (req, res, next) => {
     },
     answer_count: question.answer_count,
   };
-  const answers_with_details = await answers.map(async (answer) => {
+  const answers_with_details = answers.map(async (answer) => {
     const publisher = await User.findById(answer.published_by);
     const liked_users = answer.liked_by.map(async (uid) => {
       const user = await User.findById(uid);
@@ -145,11 +162,34 @@ question.get("/user/:id", async (req, res, next) => {
   } else {
     result = await Question.find({ created_for: query_for._id });
   }
+  const result_with_details = result.map(async (item) => {
+    const created_by = await User.findById(item.created_by);
+    const created_for = await User.findById(item.created_for);
+    return {
+      _id: item._id,
+      title: item.title,
+      tags: item.tags,
+      created_by: {
+        _id: created_by._id,
+        username: created_by.username,
+        avatar: created_by.avatar,
+      },
+      created_for: {
+        _id: created_for._id,
+        username: created_for.username,
+        avatar: created_for.avatar,
+      },
+      created_time: item.created_time,
+      updated_time: item.updated_time,
+      level: item.level,
+      answer_count: item.answer_count,
+    };
+  });
   const total = await Question.countDocuments({ created_for: query_for._id });
   return res.status(200).json({
     status: 200,
     payload: {
-      questions: result,
+      questions: await Promise.all(result_with_details),
       total,
     },
     msg: "query success",
@@ -170,10 +210,33 @@ question.get("/", async (req, res, next) => {
     result = await Question.find();
   }
   const total = await Question.countDocuments();
+  const result_with_details = result.map(async (item) => {
+    const created_by = await User.findById(item.created_by);
+    const created_for = await User.findById(item.created_for);
+    return {
+      _id: item._id,
+      title: item.title,
+      tags: item.tags,
+      created_by: {
+        _id: created_by._id,
+        username: created_by.username,
+        avatar: created_by.avatar,
+      },
+      created_for: {
+        _id: created_for._id,
+        username: created_for.username,
+        avatar: created_for.avatar,
+      },
+      created_time: item.created_time,
+      updated_time: item.updated_time,
+      level: item.level,
+      answer_count: item.answer_count,
+    };
+  });
   return res.status(200).json({
     status: 200,
     payload: {
-      questions: result,
+      questions: await Promise.all(result_with_details),
       total,
     },
     msg: "query success",

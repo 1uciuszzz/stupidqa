@@ -5,10 +5,12 @@ import { verify_token } from "./../../utils/jwt.js";
 
 const answer = express.Router();
 
+// 在特定问题下面添加答案
 answer.post("/question/:id", async (req, res, next) => {
   const { authorization } = req.headers;
   const verify_result = verify_token(authorization);
   if (verify_result.status) {
+    const user = verify_result.payload;
     const { id } = req.params;
     let question = null;
     try {
@@ -24,7 +26,7 @@ answer.post("/question/:id", async (req, res, next) => {
       if (content) {
         const result = await Answer.create({
           content,
-          published_by: verify_result.payload._id,
+          published_by: user._id,
           question_for: id,
           liked_by: [],
         });
@@ -33,7 +35,17 @@ answer.post("/question/:id", async (req, res, next) => {
         return res.status(200).json({
           status: 200,
           payload: {
-            answer: result,
+            answer: {
+              content: result.content,
+              published_by: {
+                _id: user._id,
+                username: user.username,
+                avatar: user.avatar,
+              },
+              question_for: result.question_for,
+              liked_by: result.liked_by,
+              _id: result._id,
+            },
           },
           msg: "publish answer success",
         });

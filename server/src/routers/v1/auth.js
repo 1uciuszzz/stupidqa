@@ -13,10 +13,21 @@ auth.post("/", multer().none(), async (req, res, next) => {
   if (user) {
     const match = verify_password(password, user.password);
     if (match) {
-      const token = gen_token({ _id: user._id });
+      const token = gen_token({
+        _id: user._id,
+        username: user.username,
+        avatar: user.avatar,
+      });
       return res.status(200).json({
         status: 200,
-        payload: { token, user_id: user._id },
+        payload: {
+          token,
+          user: {
+            _id: user._id,
+            username: user.username,
+            avatar: user.avatar,
+          },
+        },
         msg: "login success",
       });
     } else {
